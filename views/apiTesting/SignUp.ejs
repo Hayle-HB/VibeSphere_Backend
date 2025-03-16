@@ -1,0 +1,315 @@
+<!-- Signup Modal -->
+<div
+  class="modal fade"
+  id="signupModal"
+  tabindex="-1"
+  aria-labelledby="signupModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="signupForm" action="/api/auth/register" method="POST">
+          <!-- Name -->
+          <div class="form-floating mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="signupName"
+              name="name"
+              placeholder="Your Name"
+              required
+              minlength="2"
+            />
+            <label for="signupName">Full Name</label>
+            <div class="invalid-feedback">
+              Name must be at least 2 characters.
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-floating mb-3">
+            <input
+              type="email"
+              class="form-control"
+              id="signupEmail"
+              name="email"
+              placeholder="name@example.com"
+              required
+            />
+            <label for="signupEmail">Email address</label>
+            <div class="invalid-feedback">
+              Please enter a valid email address.
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-floating mb-3 password-wrapper">
+            <input
+              type="password"
+              class="form-control"
+              id="signupPassword"
+              name="password"
+              placeholder="Password"
+              required
+              minlength="8"
+            />
+            <label for="signupPassword">Password</label>
+            <span class="password-toggle" id="signupPasswordToggle">
+              <i class="fas fa-eye"></i>
+            </span>
+            <div class="invalid-feedback">
+              Password must be at least 8 characters.
+            </div>
+          </div>
+
+          <!-- Password Strength Meter -->
+          <div class="mb-3">
+            <div class="progress">
+              <div
+                id="passwordStrength"
+                class="progress-bar"
+                role="progressbar"
+                style="width: 0%"
+                aria-valuenow="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div>
+            <small id="passwordStrengthText" class="form-text text-muted"
+              >Password strength</small
+            >
+          </div>
+
+          <!-- Terms and Conditions -->
+          <div class="form-check mb-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="agreeTerms"
+              name="agreeTerms"
+              required
+            />
+            <label class="form-check-label" for="agreeTerms">
+              I agree to the Terms of Service
+            </label>
+            <div class="invalid-feedback">
+              You must agree before submitting.
+            </div>
+          </div>
+
+          <!-- Signup Status Alert -->
+          <div id="signupStatus" class="alert d-none mb-3" role="alert"></div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="btn btn-primary w-100 mb-3"
+            id="signupButton"
+          >
+            <i class="fas fa-user-plus me-2"></i>Create Account
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Password toggle for signup form
+    const signupPasswordToggle = document.getElementById(
+      "signupPasswordToggle"
+    );
+    if (signupPasswordToggle) {
+      signupPasswordToggle.addEventListener("click", function () {
+        const passwordInput = document.getElementById("signupPassword");
+        const eyeIcon = this.querySelector("i");
+
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          eyeIcon.classList.remove("fa-eye");
+          eyeIcon.classList.add("fa-eye-slash");
+        } else {
+          passwordInput.type = "password";
+          eyeIcon.classList.remove("fa-eye-slash");
+          eyeIcon.classList.add("fa-eye");
+        }
+      });
+    }
+
+    // Password strength meter
+    const signupPassword = document.getElementById("signupPassword");
+    const passwordStrength = document.getElementById("passwordStrength");
+    const passwordStrengthText = document.getElementById(
+      "passwordStrengthText"
+    );
+
+    if (signupPassword && passwordStrength && passwordStrengthText) {
+      signupPassword.addEventListener("input", function () {
+        const password = this.value;
+        let strength = 0;
+        let tips = [];
+
+        // Length
+        if (password.length >= 8) {
+          strength += 25;
+        } else {
+          tips.push("at least 8 characters");
+        }
+
+        // Uppercase
+        if (/[A-Z]/.test(password)) {
+          strength += 25;
+        } else {
+          tips.push("uppercase letter");
+        }
+
+        // Lowercase
+        if (/[a-z]/.test(password)) {
+          strength += 25;
+        } else {
+          tips.push("lowercase letter");
+        }
+
+        // Numbers or special chars
+        if (/[0-9!@#$%^&*]/.test(password)) {
+          strength += 25;
+        } else {
+          tips.push("number or special character");
+        }
+
+        // Update progress bar
+        passwordStrength.style.width = strength + "%";
+
+        // Update text and color based on strength
+        if (strength <= 25) {
+          passwordStrength.className = "progress-bar bg-danger";
+          passwordStrengthText.textContent = "Weak password";
+        } else if (strength <= 50) {
+          passwordStrength.className = "progress-bar bg-warning";
+          passwordStrengthText.textContent = "Fair password";
+        } else if (strength <= 75) {
+          passwordStrength.className = "progress-bar bg-info";
+          passwordStrengthText.textContent = "Good password";
+        } else {
+          passwordStrength.className = "progress-bar bg-success";
+          passwordStrengthText.textContent = "Strong password";
+        }
+
+        // Add tips if needed
+        if (tips.length > 0) {
+          passwordStrengthText.textContent += ". Add: " + tips.join(", ");
+        }
+      });
+    }
+
+    // AJAX form submission for signup form
+    const signupForm = document.getElementById("signupForm");
+    if (signupForm) {
+      signupForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        if (!this.checkValidity()) {
+          e.stopPropagation();
+
+          // Add validation classes to form fields
+          const formInputs = this.querySelectorAll("input[required]");
+          formInputs.forEach((input) => {
+            if (!input.checkValidity()) {
+              input.classList.add("is-invalid");
+            } else {
+              input.classList.remove("is-invalid");
+            }
+          });
+
+          return;
+        }
+
+        // Get form data
+        const formData = new FormData(signupForm);
+        const signupData = {
+          name: formData.get("name"),
+          email: formData.get("email"),
+          password: formData.get("password"),
+        };
+
+        // Update button state
+        const signupButton = document.getElementById("signupButton");
+        const originalButtonText = signupButton.innerHTML;
+        signupButton.disabled = true;
+        signupButton.innerHTML =
+          '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating account...';
+
+        // Update status
+        const signupStatus = document.getElementById("signupStatus");
+        signupStatus.className = "alert alert-info d-block mb-3";
+        signupStatus.textContent = "Creating your account...";
+
+        try {
+          // Send signup request
+          const response = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(signupData),
+            credentials: "include", // Important for cookies
+          });
+
+          const data = await response.json();
+
+          // Show response in API response area
+          const responseContainer = document.getElementById("test-response");
+          if (responseContainer) {
+            responseContainer.innerHTML = `
+              <p class="mb-2"><strong>URL:</strong> /api/auth/register</p>
+              <p class="mb-2"><strong>Method:</strong> POST</p>
+              <p class="mb-2"><strong>Status:</strong> ${response.status} ${
+              response.statusText
+            }</p>
+              <p class="mb-2"><strong>Response:</strong></p>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+          }
+
+          // Handle response
+          if (response.ok && data.success) {
+            signupStatus.className = "alert alert-success d-block mb-3";
+            signupStatus.innerHTML =
+              '<i class="fas fa-check-circle me-2"></i> Registration successful. Refreshing page...';
+
+            // Wait a moment before refreshing
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            signupStatus.className = "alert alert-danger d-block mb-3";
+            signupStatus.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> ${
+              data.message || "Registration failed"
+            }`;
+            signupButton.disabled = false;
+            signupButton.innerHTML = originalButtonText;
+          }
+        } catch (error) {
+          signupStatus.className = "alert alert-danger d-block mb-3";
+          signupStatus.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> ${
+            error.message || "Network error occurred"
+          }`;
+          signupButton.disabled = false;
+          signupButton.innerHTML = originalButtonText;
+        }
+      });
+    }
+  });
+</script>

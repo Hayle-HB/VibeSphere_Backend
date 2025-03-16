@@ -1,0 +1,226 @@
+<!-- API Test Response -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="m-0">API Response</h5>
+  </div>
+  <div class="card-body">
+    <div id="test-response" class="test-response">
+      <p class="text-muted">API response will appear here...</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* JSON Syntax Highlighting */
+  .json-response {
+    background-color: #282c34;
+    color: #abb2bf;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: "Courier New", monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    line-height: 1.5;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .json-response .json-key {
+    color: #e06c75;
+  }
+
+  .json-response .json-string {
+    color: #98c379;
+  }
+
+  .json-response .json-number {
+    color: #d19a66;
+  }
+
+  .json-response .json-boolean {
+    color: #56b6c2;
+  }
+
+  .json-response .json-null {
+    color: #c678dd;
+  }
+
+  /* Response Status Colors */
+  .status-pill {
+    display: inline-block;
+    padding: 0.25em 0.8em;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+    color: white;
+  }
+
+  .status-success {
+    background-color: #1cc88a;
+  }
+
+  .status-redirect {
+    background-color: #4e73df;
+  }
+
+  .status-client-error {
+    background-color: #e74a3b;
+  }
+
+  .status-server-error {
+    background-color: #f6c23e;
+  }
+
+  .http-method {
+    background-color: #4e73df;
+    color: white;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  .api-url {
+    font-family: "Courier New", monospace;
+    background-color: #f8f9fc;
+    padding: 0.3em 0.5em;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    word-break: break-all;
+  }
+
+  .response-meta {
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<script>
+  // Function to test API routes
+  async function testApiRoute(url, method = "GET") {
+    const responseContainer = document.getElementById("test-response");
+    responseContainer.innerHTML = '<p class="text-muted">Loading...</p>';
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include", // Important for cookies
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = { message: "No JSON response received" };
+      }
+
+      // Determine status class
+      let statusClass = "";
+      if (response.status >= 200 && response.status < 300) {
+        statusClass = "status-success";
+      } else if (response.status >= 300 && response.status < 400) {
+        statusClass = "status-redirect";
+      } else if (response.status >= 400 && response.status < 500) {
+        statusClass = "status-client-error";
+      } else if (response.status >= 500) {
+        statusClass = "status-server-error";
+      }
+
+      // Syntax highlight the JSON
+      const highlightedJson = syntaxHighlightJson(
+        JSON.stringify(data, null, 2)
+      );
+
+      // Format the response
+      responseContainer.innerHTML = `
+      <div class="response-meta">
+        <p class="mb-2">
+          <span class="http-method">${method}</span>
+          <span class="api-url ms-2">${url}</span>
+        </p>
+        <p class="mb-0">
+          <strong>Status:</strong> ${response.status} ${response.statusText}
+          <span class="status-pill ${statusClass}">${getStatusText(
+        response.status
+      )}</span>
+        </p>
+      </div>
+      <div class="json-response">${highlightedJson}</div>
+    `;
+    } catch (error) {
+      responseContainer.innerHTML = `
+      <div class="response-meta">
+        <p class="mb-2">
+          <span class="http-method">${method}</span>
+          <span class="api-url ms-2">${url}</span>
+        </p>
+        <p class="mb-0 text-danger">
+          <strong>Error:</strong> Network request failed
+        </p>
+      </div>
+      <div class="json-response json-error">${error.message}</div>
+    `;
+    }
+  }
+
+  // Function to highlight JSON syntax
+  function syntaxHighlightJson(json) {
+    // Replace special characters to prevent HTML injection
+    json = json
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    // Highlight pattern for different JSON elements
+    return json.replace(
+      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+      function (match) {
+        let cls = "json-number";
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = "json-key";
+            // Remove the colon from the match for styling
+            match = match.replace(/:$/, "") + ":";
+          } else {
+            cls = "json-string";
+          }
+        } else if (/true|false/.test(match)) {
+          cls = "json-boolean";
+        } else if (/null/.test(match)) {
+          cls = "json-null";
+        }
+
+        // For keys, add back the colon outside the span
+        if (cls === "json-key") {
+          return (
+            '<span class="' + cls + '">' + match.replace(/:$/, "") + "</span>:"
+          );
+        }
+
+        return '<span class="' + cls + '">' + match + "</span>";
+      }
+    );
+  }
+
+  // Function to get human readable status text
+  function getStatusText(status) {
+    if (status >= 200 && status < 300) {
+      return "Success";
+    } else if (status >= 300 && status < 400) {
+      return "Redirect";
+    } else if (status >= 400 && status < 500) {
+      return "Client Error";
+    } else if (status >= 500) {
+      return "Server Error";
+    }
+    return "Unknown";
+  }
+</script>

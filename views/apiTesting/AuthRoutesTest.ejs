@@ -1,0 +1,205 @@
+<!-- Auth Buttons -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="m-0">Auth Routes Test</h5>
+  </div>
+  <div class="card-body">
+    <% if (!locals.user) { %>
+    <!-- Public Routes (Before Login) -->
+    <h6 class="mb-3">Public Routes</h6>
+    <div class="btn-container mb-4">
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#loginModal"
+      >
+        <i class="fas fa-sign-in-alt me-2"></i>Login
+      </button>
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#signupModal"
+      >
+        <i class="fas fa-user-plus me-2"></i>Sign Up
+      </button>
+      <button
+        class="btn btn-outline-primary"
+        onclick="testApiRoute('/api/auth')"
+      >
+        <i class="fas fa-heartbeat me-2"></i>Health Check
+      </button>
+      <button
+        class="btn btn-outline-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#forgotPasswordModal"
+      >
+        <i class="fas fa-key me-2"></i>Forgot Password
+      </button>
+      <button
+        class="btn btn-outline-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#resetPasswordModal"
+      >
+        <i class="fas fa-lock-open me-2"></i>Reset Password
+      </button>
+    </div>
+    <% } else { %>
+    <!-- Protected Routes (After Login) -->
+    <h6 class="mb-3">Protected Routes</h6>
+    <div class="btn-container mb-4">
+      <button id="logoutButton" type="button" class="btn btn-danger">
+        <i class="fas fa-sign-out-alt me-2"></i>Logout
+      </button>
+      <a href="/protected" class="btn btn-primary">
+        <i class="fas fa-lock me-2"></i>Protected Route
+      </a>
+      <button
+        class="btn btn-outline-primary"
+        onclick="testApiRoute('/api/auth/me')"
+      >
+        <i class="fas fa-user-check me-2"></i>Get Current User
+      </button>
+      <button
+        class="btn btn-outline-primary"
+        onclick="testApiRoute('/api/auth/refresh', 'POST')"
+      >
+        <i class="fas fa-sync me-2"></i>Refresh Token
+      </button>
+
+      <% if (locals.user && user.role === 'admin') { %>
+      <!-- Admin Routes -->
+      <button class="btn btn-warning" onclick="testApiRoute('/api/auth/users')">
+        <i class="fas fa-users me-2"></i>Get All Users (Admin)
+      </button>
+      <% } %>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle logout AJAX request
+    const logoutButton = document.getElementById("logoutButton");
+    if (logoutButton) {
+      logoutButton.addEventListener("click", async function () {
+        // Update button state
+        const originalButtonText = logoutButton.innerHTML;
+        logoutButton.disabled = true;
+        logoutButton.innerHTML =
+          '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging out...';
+
+        try {
+          // Send logout request
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+            },
+            credentials: "include", // Important for cookies
+          });
+
+          let data;
+          try {
+            data = await response.json();
+          } catch (e) {
+            data = { success: true, message: "Logged out (no response body)" };
+          }
+
+          // Show response in API response area
+          const responseContainer = document.getElementById("test-response");
+          if (responseContainer) {
+            responseContainer.innerHTML = `
+              <p class="mb-2"><strong>URL:</strong> /api/auth/logout</p>
+              <p class="mb-2"><strong>Method:</strong> POST</p>
+              <p class="mb-2"><strong>Status:</strong> ${response.status} ${
+              response.statusText
+            }</p>
+              <p class="mb-2"><strong>Response:</strong></p>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+          }
+
+          // Handle response
+          if (response.ok) {
+            // Show message temporarily before reload
+            const alertHtml = `
+              <div class="alert alert-success alert-dismissible fade show mb-4">
+                <i class="fas fa-check-circle me-2"></i>${
+                  data.message || "Logged out successfully"
+                }
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            `;
+
+            // Add alert at the top of container
+            const container = document.querySelector(".container");
+            if (container && container.firstChild) {
+              const tempDiv = document.createElement("div");
+              tempDiv.innerHTML = alertHtml;
+              container.insertBefore(
+                tempDiv.firstChild,
+                container.firstChild.nextSibling
+              );
+            }
+
+            // Wait a moment before refreshing
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            // If error, restore button and show error
+            logoutButton.disabled = false;
+            logoutButton.innerHTML = originalButtonText;
+
+            // Show error alert
+            const alertHtml = `
+              <div class="alert alert-danger alert-dismissible fade show mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i>${
+                  data.message || "Logout failed"
+                }
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            `;
+
+            // Add alert at the top of container
+            const container = document.querySelector(".container");
+            if (container && container.firstChild) {
+              const tempDiv = document.createElement("div");
+              tempDiv.innerHTML = alertHtml;
+              container.insertBefore(
+                tempDiv.firstChild,
+                container.firstChild.nextSibling
+              );
+            }
+          }
+        } catch (error) {
+          // If network error, restore button and show error
+          logoutButton.disabled = false;
+          logoutButton.innerHTML = originalButtonText;
+
+          // Show error alert
+          const alertHtml = `
+            <div class="alert alert-danger alert-dismissible fade show mb-4">
+              <i class="fas fa-exclamation-circle me-2"></i>${
+                error.message || "Network error occurred"
+              }
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          `;
+
+          // Add alert at the top of container
+          const container = document.querySelector(".container");
+          if (container && container.firstChild) {
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = alertHtml;
+            container.insertBefore(
+              tempDiv.firstChild,
+              container.firstChild.nextSibling
+            );
+          }
+        }
+      });
+    }
+  });
+</script>

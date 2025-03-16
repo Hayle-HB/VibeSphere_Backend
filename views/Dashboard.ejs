@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Your App</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #4e73df;
+        --secondary-color: #f8f9fc;
+        --success-color: #1cc88a;
+        --warning-color: #f6c23e;
+        --danger-color: #e74a3b;
+        --info-color: #36b9cc;
+        --dark-color: #5a5c69;
+        --light-color: #f8f9fc;
+      }
+
+      body {
+        font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: var(--secondary-color);
+        color: var(--dark-color);
+        min-height: 100vh;
+        display: flex;
+      }
+
+      /* Sidebar Styles */
+      .sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+        padding: 0;
+        flex-shrink: 0;
+        transition: all 0.3s;
+        position: fixed;
+        height: 100%;
+        z-index: 100;
+      }
+
+      .sidebar-brand {
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar-brand h2 {
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0;
+      }
+
+      .sidebar-menu {
+        padding: 1rem 0;
+      }
+
+      .sidebar-heading {
+        padding: 0 1rem;
+        font-weight: 800;
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        margin: 1rem 0 0.5rem;
+      }
+
+      .nav-item {
+        position: relative;
+      }
+
+      .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .nav-link:hover {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .nav-link i {
+        width: 1.25rem;
+        font-size: 0.9rem;
+        margin-right: 0.75rem;
+        text-align: center;
+      }
+
+      .nav-link.active {
+        color: white;
+        font-weight: 700;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar-divider {
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        margin: 1rem 0;
+      }
+
+      .collapse-item {
+        padding: 0.5rem 1rem;
+        margin: 0 1rem;
+        display: block;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+        font-size: 0.85rem;
+        border-radius: 0.35rem;
+        white-space: nowrap;
+      }
+
+      .collapse-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+
+      .collapse-item.active {
+        color: white;
+        font-weight: 700;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Main Content */
+      .content {
+        width: 100%;
+        margin-left: 250px;
+        flex-grow: 1;
+        transition: all 0.3s;
+      }
+
+      .navbar {
+        background-color: white;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        position: relative;
+        height: 70px;
+      }
+
+      .sidebar-toggle {
+        color: var(--dark-color);
+        font-size: 1.2rem;
+        padding: 0.75rem;
+        margin-right: 1rem;
+        cursor: pointer;
+      }
+
+      .page-title {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+      }
+
+      .card {
+        border: none;
+        border-radius: 0.35rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        margin-bottom: 1.5rem;
+      }
+
+      .card-header {
+        background-color: white;
+        border-bottom: 1px solid #e3e6f0;
+        font-weight: 700;
+        color: var(--dark-color);
+      }
+
+      .profile-dropdown .dropdown-toggle::after {
+        display: none;
+      }
+
+      .profile-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .dropdown-item:active {
+        background-color: var(--primary-color);
+      }
+
+      .border-left-primary {
+        border-left: 0.25rem solid var(--primary-color);
+      }
+
+      .border-left-success {
+        border-left: 0.25rem solid var(--success-color);
+      }
+
+      .border-left-info {
+        border-left: 0.25rem solid var(--info-color);
+      }
+
+      .border-left-warning {
+        border-left: 0.25rem solid var(--warning-color);
+      }
+
+      .text-primary {
+        color: var(--primary-color) !important;
+      }
+
+      .text-success {
+        color: var(--success-color) !important;
+      }
+
+      .text-info {
+        color: var(--info-color) !important;
+      }
+
+      .text-warning {
+        color: var(--warning-color) !important;
+      }
+
+      .mini-stat-icon {
+        font-size: 2rem;
+        opacity: 0.4;
+      }
+
+      /* Responsive */
+      .sidebar-toggled .sidebar {
+        width: 0;
+        overflow: hidden;
+      }
+
+      .sidebar-toggled .content {
+        margin-left: 0;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 0;
+          overflow: hidden;
+        }
+
+        .content {
+          margin-left: 0;
+        }
+
+        .sidebar-mobile-expanded .sidebar {
+          width: 250px;
+        }
+      }
+    </style>
+  </head>
+  <body class="<%= locals.sidebarToggled ? 'sidebar-toggled' : '' %>">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <h2>Your App</h2>
+      </div>
+
+      <div class="sidebar-menu">
+        <div class="sidebar-heading">Core</div>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="/dashboard">
+              <i class="fas fa-fw fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+        </ul>
+
+        <hr class="sidebar-divider" />
+
+        <div class="sidebar-heading">Interface</div>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/profile">
+              <i class="fas fa-fw fa-user"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/settings">
+              <i class="fas fa-fw fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+
+        <hr class="sidebar-divider" />
+
+        <div class="sidebar-heading">Data</div>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/analytics">
+              <i class="fas fa-fw fa-chart-area"></i>
+              <span>Analytics</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/reports">
+              <i class="fas fa-fw fa-table"></i>
+              <span>Reports</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content">
+      <!-- Top Navbar -->
+      <nav class="navbar navbar-expand">
+        <div class="container-fluid">
+          <button id="sidebarToggle" class="btn sidebar-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item dropdown profile-dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <span class="d-none d-lg-inline me-2"><%= user.name %></span>
+                <img
+                  src="<%= user.avatar || 'https://via.placeholder.com/40' %>"
+                  alt="Profile"
+                  class="profile-img"
+                />
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="/profile"
+                    ><i class="fas fa-user fa-sm me-2"></i>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/settings"
+                    ><i class="fas fa-cog fa-sm me-2"></i>Settings</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/activity"
+                    ><i class="fas fa-list fa-sm me-2"></i>Activity Log</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <form
+                    action="/api/auth/logout"
+                    method="POST"
+                    id="logout-form"
+                  >
+                    <button type="submit" class="dropdown-item text-danger">
+                      <i class="fas fa-sign-out-alt fa-sm me-2"></i>Logout
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="container-fluid p-4">
+        <!-- Flash Messages -->
+        <% if (locals.success && locals.success.length > 0) { %>
+        <div class="alert alert-success alert-dismissible fade show mb-4">
+          <i class="fas fa-check-circle me-2"></i><%= success %>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+        <% } %> <% if (locals.error && locals.error.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible fade show mb-4">
+          <i class="fas fa-exclamation-circle me-2"></i><%= error %>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+        <% } %>
+
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+          <h1 class="page-title">Dashboard</h1>
+          <a
+            href="/reports/download"
+            class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+          >
+            <i class="fas fa-download fa-sm text-white"></i> Generate Report
+          </a>
+        </div>
+
+        <!-- Content Row - Stats Cards -->
+        <div class="row">
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col">
+                    <div
+                      class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+                    >
+                      Account Status
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                      Active
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <i
+                      class="fas fa-user-check mini-stat-icon text-primary"
+                    ></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col">
+                    <div
+                      class="text-xs font-weight-bold text-success text-uppercase mb-1"
+                    >
+                      Role
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                      <%= user.role || 'User' %>
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-user-tag mini-stat-icon text-success"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col">
+                    <div
+                      class="text-xs font-weight-bold text-info text-uppercase mb-1"
+                    >
+                      Profile Completion
+                    </div>
+                    <div class="row no-gutters align-items-center">
+                      <div class="col-auto">
+                        <div
+                          class="h5 mb-0 me-3 font-weight-bold text-gray-800"
+                        >
+                          80%
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="progress progress-sm">
+                          <div
+                            class="progress-bar bg-info"
+                            role="progressbar"
+                            style="width: 80%"
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <i
+                      class="fas fa-clipboard-list mini-stat-icon text-info"
+                    ></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col">
+                    <div
+                      class="text-xs font-weight-bold text-warning text-uppercase mb-1"
+                    >
+                      Member Since
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                      <%= new Date(user.createdAt ||
+                      Date.now()).toLocaleDateString() %>
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-calendar mini-stat-icon text-warning"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Row - Recent Activity -->
+        <div class="row">
+          <div class="col-lg-6 mb-4">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Recent Activity</h6>
+              </div>
+              <div class="card-body">
+                <div class="d-flex align-items-center border-bottom pb-3 mb-3">
+                  <div class="me-3">
+                    <i class="fas fa-sign-in-alt fa-2x text-primary"></i>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">
+                      Last login: <%= new Date(user.lastLogin ||
+                      Date.now()).toLocaleString() %>
+                    </div>
+                    <span
+                      >You logged in from <%= locals.ipAddress || 'unknown
+                      location' %></span
+                    >
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center border-bottom pb-3 mb-3">
+                  <div class="me-3">
+                    <i class="fas fa-user-edit fa-2x text-info"></i>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">2 days ago</div>
+                    <span>You updated your profile information</span>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="fas fa-shield-alt fa-2x text-success"></i>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">1 week ago</div>
+                    <span>Security check completed successfully</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-4">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Your Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4 text-center mb-4">
+                    <img
+                      src="<%= user.avatar || 'https://via.placeholder.com/150' %>"
+                      alt="Profile"
+                      class="img-fluid rounded-circle mb-3"
+                      style="max-width: 150px"
+                    />
+                    <h5><%= user.name %></h5>
+                    <p class="badge bg-primary"><%= user.role || 'User' %></p>
+                  </div>
+                  <div class="col-md-8">
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item">
+                        <strong>Email:</strong> <%= user.email %>
+                      </li>
+                      <li class="list-group-item">
+                        <strong>Account ID:</strong> <%= user._id %>
+                      </li>
+                      <li class="list-group-item">
+                        <strong>Last Login:</strong> <%= new Date(user.lastLogin
+                        || Date.now()).toLocaleString() %>
+                      </li>
+                      <li class="list-group-item">
+                        <strong>Member Since:</strong> <%= new
+                        Date(user.createdAt || Date.now()).toLocaleDateString()
+                        %>
+                      </li>
+                      <li class="list-group-item">
+                        <a href="/profile" class="btn btn-primary btn-sm"
+                          >Edit Profile</a
+                        >
+                        <a
+                          href="/settings/security"
+                          class="btn btn-outline-secondary btn-sm"
+                          >Security Settings</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Sidebar toggle
+        const sidebarToggle = document.getElementById("sidebarToggle");
+
+        sidebarToggle.addEventListener("click", function () {
+          document.body.classList.toggle("sidebar-toggled");
+
+          // For mobile
+          if (window.innerWidth < 768) {
+            document.body.classList.toggle("sidebar-mobile-expanded");
+          }
+        });
+
+        // Handle window resize
+        window.addEventListener("resize", function () {
+          if (window.innerWidth < 768) {
+            document.body.classList.remove("sidebar-toggled");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,205 @@
+<!-- Login Modal -->
+<div
+  class="modal fade"
+  id="loginModal"
+  tabindex="-1"
+  aria-labelledby="loginModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="loginModalLabel">Login</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm" action="/api/auth/login" method="POST">
+          <!-- Email -->
+          <div class="form-floating mb-3">
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              placeholder="name@example.com"
+              required
+            />
+            <label for="email">Email address</label>
+            <div class="invalid-feedback">
+              Please enter a valid email address.
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-floating mb-3 password-wrapper">
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              placeholder="Password"
+              required
+            />
+            <label for="password">Password</label>
+            <span class="password-toggle" id="passwordToggle">
+              <i class="fas fa-eye"></i>
+            </span>
+            <div class="invalid-feedback">Please enter your password.</div>
+          </div>
+
+          <!-- Remember Me -->
+          <div class="form-check mb-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="rememberMe"
+              name="rememberMe"
+            />
+            <label class="form-check-label" for="rememberMe">
+              Remember me
+            </label>
+          </div>
+
+          <!-- Login Status Alert -->
+          <div id="loginStatus" class="alert d-none mb-3" role="alert"></div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="btn btn-primary w-100 mb-3"
+            id="loginButton"
+          >
+            <i class="fas fa-sign-in-alt me-2"></i>Login
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Password toggle for login form
+    const loginPasswordToggle = document.getElementById("passwordToggle");
+    if (loginPasswordToggle) {
+      loginPasswordToggle.addEventListener("click", function () {
+        const passwordInput = document.getElementById("password");
+        const eyeIcon = this.querySelector("i");
+
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          eyeIcon.classList.remove("fa-eye");
+          eyeIcon.classList.add("fa-eye-slash");
+        } else {
+          passwordInput.type = "password";
+          eyeIcon.classList.remove("fa-eye-slash");
+          eyeIcon.classList.add("fa-eye");
+        }
+      });
+    }
+
+    // AJAX form submission for login
+    const loginForm = document.getElementById("loginForm");
+    if (loginForm) {
+      loginForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        if (!this.checkValidity()) {
+          e.stopPropagation();
+
+          // Add validation classes to form fields
+          const formInputs = this.querySelectorAll("input[required]");
+          formInputs.forEach((input) => {
+            if (!input.checkValidity()) {
+              input.classList.add("is-invalid");
+            } else {
+              input.classList.remove("is-invalid");
+            }
+          });
+
+          return;
+        }
+
+        // Get form data
+        const formData = new FormData(loginForm);
+        const loginData = {
+          email: formData.get("email"),
+          password: formData.get("password"),
+          rememberMe: formData.get("rememberMe") === "on" ? true : false,
+        };
+
+        // Update button state
+        const loginButton = document.getElementById("loginButton");
+        const originalButtonText = loginButton.innerHTML;
+        loginButton.disabled = true;
+        loginButton.innerHTML =
+          '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
+
+        // Update status
+        const loginStatus = document.getElementById("loginStatus");
+        loginStatus.className = "alert alert-info d-block mb-3";
+        loginStatus.textContent = "Logging in...";
+
+        try {
+          // Send login request
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(loginData),
+            credentials: "include", // Important for cookies
+          });
+
+          const data = await response.json();
+
+          // Show response in API response area
+          const responseContainer = document.getElementById("test-response");
+          if (responseContainer) {
+            responseContainer.innerHTML = `
+              <p class="mb-2"><strong>URL:</strong> /api/auth/login</p>
+              <p class="mb-2"><strong>Method:</strong> POST</p>
+              <p class="mb-2"><strong>Status:</strong> ${response.status} ${
+              response.statusText
+            }</p>
+              <p class="mb-2"><strong>Response:</strong></p>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+          }
+
+          // Handle response
+          if (response.ok && data.success) {
+            loginStatus.className = "alert alert-success d-block mb-3";
+            loginStatus.innerHTML =
+              '<i class="fas fa-check-circle me-2"></i> Login successful. Refreshing page...';
+
+            // Wait a moment before refreshing
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            loginStatus.className = "alert alert-danger d-block mb-3";
+            loginStatus.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> ${
+              data.message || "Login failed"
+            }`;
+            loginButton.disabled = false;
+            loginButton.innerHTML = originalButtonText;
+          }
+        } catch (error) {
+          loginStatus.className = "alert alert-danger d-block mb-3";
+          loginStatus.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> ${
+            error.message || "Network error occurred"
+          }`;
+          loginButton.disabled = false;
+          loginButton.innerHTML = originalButtonText;
+        }
+      });
+    }
+  });
+</script>
