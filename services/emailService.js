@@ -21,9 +21,15 @@ const sendEmail = async ({ to, subject, text, html }) => {
     from: `"VibeSphere" <${process.env.EMAIL_USER}>`,
     to,
     subject,
-    text,
-    html,
   };
+
+  if (html) {
+    mailOptions.html = html;
+  } else if (text) {
+    mailOptions.text = text;
+  } else {
+    throw new Error("Either html or text content must be provided");
+  }
 
   try {
     const info = await transporter.sendMail(mailOptions);

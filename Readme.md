@@ -19,6 +19,7 @@ A robust and scalable backend for the VibeSphere social media application, built
 - **API Security**: Rate limiting, CORS protection, and secure HTTP headers
 - **Session Handling**: Persistent user sessions with timeout and renewal
 - **Error Management**: Comprehensive error handling and user feedback
+- **Testing Interface**: Complete EJS-based UI for testing all authentication flows
 
 ## 🛡️ Security Features Implemented
 
@@ -105,12 +106,38 @@ A robust and scalable backend for the VibeSphere social media application, built
 ├── tests/              # Test files
 ├── utils/              # Utility functions
 ├── views/              # EJS templates
+│   ├── all.ejs         # Main testing interface that includes components
+│   └── apiTesting/     # Modular UI components for API testing
 ├── .env                # Environment variables
 ├── .gitignore          # Git ignore file
 ├── package.json        # Project dependencies
 ├── server.js           # Application entry point
 └── README.md           # This file
 ```
+
+## 🧹 View Files Cleanup Needed
+
+The project currently has duplicated view files that should be cleaned up:
+
+1. **Files to Keep**:
+
+   - `views/all.ejs` - Main testing interface that includes all components
+   - `views/apiTesting/*` - All component files in this directory are used as includes
+
+2. **Files to Remove** (duplicates or unused):
+
+   - `views/auth.ejs` - Duplicate functionality, not used in server.js
+   - `views/Dashboard.ejs` - Not currently used in server.js
+   - `views/error.ejs` - Redundant as errors are displayed in all.ejs
+   - `views/Home.ejs` - Not currently used in server.js
+   - `views/Login.ejs` - Duplicate of views/apiTesting/Login.ejs
+   - `views/Signup.ejs` - Duplicate of views/apiTesting/SignUp.ejs
+   - `views/apiTesting/Error.ejs` - Empty file (0 bytes)
+
+3. **Cleanup Notes**:
+   - Server only renders the `all.ejs` template with different activeTab parameters
+   - All functionality is modularized in the apiTesting directory
+   - After cleanup, update any imports if necessary
 
 ## 🚀 Future Development Roadmap
 
