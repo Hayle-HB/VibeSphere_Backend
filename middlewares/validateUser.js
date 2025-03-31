@@ -1,6 +1,8 @@
 const Joi = require("joi");
 
-// Validation schemas
+/**
+ * Validation schema definitions for user-related data
+ */
 const schemas = {
   name: Joi.string().min(2).trim().required().messages({
     "string.min": "Name must be at least 2 characters long",
@@ -14,7 +16,7 @@ const schemas = {
     .pattern(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/)
     .messages({
       "string.email": "Please enter a valid email",
-      "string.empty": "Email is required",
+      "string.empty": "Email is required", 
       "string.pattern.base": "Please enter a valid email",
     }),
   password: Joi.string().min(8).required().messages({
@@ -26,7 +28,12 @@ const schemas = {
   }),
 };
 
-// Generic validation middleware factory
+/**
+ * Generic validation middleware factory
+ * Creates a middleware function that validates request body against provided schema
+ * @param {Object} schemaMap - Object containing Joi schema definitions
+ * @returns {Function} Express middleware function
+ */
 const validate = (schemaMap) => {
   return (req, res, next) => {
     const schema = Joi.object(schemaMap);
@@ -47,22 +54,36 @@ const validate = (schemaMap) => {
   };
 };
 
-// Specific validation middlewares
+/**
+ * Validation middleware for user registration
+ */
 const validateUser = validate({
   name: schemas.name,
   email: schemas.email,
   password: schemas.password,
 });
 
+/**
+ * Validation middleware for user login
+ */
 const validateLogin = validate({
   email: schemas.email,
   password: schemas.password,
 });
 
+/**
+ * Validation middleware for email operations
+ */
 const validateEmail = validate({
   email: schemas.email,
 });
 
+/**
+ * Validation middleware for password reset
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const validateResetPassword = (req, res, next) => {
   const { token, password } = req.body;
 
@@ -88,5 +109,5 @@ module.exports = {
   validateLogin,
   validateEmail,
   validateResetPassword,
-  validate, // Export factory for custom validations
+  validate, 
 };
