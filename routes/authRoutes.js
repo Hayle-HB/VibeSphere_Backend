@@ -14,6 +14,7 @@ const {
   getUsers,
   forgotPassword,
   resetPassword,
+  // verifyEmail
 } = require("../controllers/authController");
 const {
   validateUser,
@@ -21,7 +22,12 @@ const {
   validateEmail,
   validateResetPassword,
 } = require("../middlewares/validateUser");
-
+const {
+  sendEmail,
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+} = require("../services/emailService");
 // Public routes with validation
 router.post("/register", validateUser, registerUser);
 router.post("/login", validateLogin, loginUser);
@@ -30,8 +36,6 @@ router.post("/forgot-password", validateEmail, forgotPassword);
 router.post("/reset-password", validateResetPassword, resetPassword);
 router.post("/logout", requireAuth, logoutUser);
 router.get("/me", requireAuth, getCurrentUser);
-
-
 router.get("/users", requireAuth, requireRole("admin"), getUsers);
 
 router.get("/", (req, res) => {

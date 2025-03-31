@@ -6,6 +6,14 @@ const {
   verifyRefreshToken,
   TOKEN_CONFIG,
 } = require("../services/authServices");
+const {
+  sendEmail,
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+  verifyEmail,
+  resendVerificationEmail,
+} = require("../services/emailService");
 const User = require("../models/userModels/User");
 const crypto = require("crypto");
 
@@ -32,6 +40,7 @@ const registerUser = async (req, res) => {
       email,
       password,
       provider: "local",
+      isVerified: false, // Set initial verification status to false
     });
 
     // Generate tokens
@@ -68,9 +77,17 @@ const registerUser = async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
+    // Generate verification code and send verification email
+    const verificationCode = crypto
+      .randomBytes(3)
+      .toString("hex")
+      .toUpperCase();
+    await sendVerificationEmail(user.email, verificationCode);
+
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message:
+        "User registered successfully. Please check your email to verify your account.",
       user: userData,
       token: accessToken,
     });

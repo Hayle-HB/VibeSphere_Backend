@@ -1,4 +1,5 @@
 const { verifyToken } = require("../services/authServices");
+const User = require("../models/userModels/User");
 
 /**
  * Extract token from request headers, query string, or cookies
@@ -22,39 +23,52 @@ const extractToken = (req) => {
   return null;
 };
 
-
-
-
-
 /**
  * Required authentication middleware - blocks unauthenticated requests
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
+const requireAuth = async (req, res, next) => {
+  try {
+    // Get token from cookie
+    const token = req.cookies.accessToken;
 
-const requireAuth = (req, res, next) => {
-  const token = extractToken(req);
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
 
-  if (!token) {
-    return res.status(401).json({
+    // Verify token
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
+    }
+
+    // Find user and attach to request
+    const user = await User.findById(decoded.userID).select("+email");
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Attach user to request
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error("Auth Middleware Error:", error);
+    res.status(401).json({
       success: false,
-      message: "Authentication required. Please log in.",
+      message: "Authentication failed",
     });
   }
-
-  const decoded = verifyToken(token);
-
-  if (!decoded) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token. Please log in again.",
-    });
-  }
-
-  // Attach user info to request object
-  req.user = decoded;
-  next();
 };
 
 /**

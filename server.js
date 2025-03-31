@@ -9,6 +9,7 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const { requireAuth } = require("./middlewares/authMiddleware");
 
+
 // Connect to MongoDB
 connectDB();
 
@@ -85,7 +86,11 @@ app.use((req, res, next) => {
 
 // API routes
 const authRoutes = require("./routes/authRoutes");
+const emailRoutes = require("./routes/emailRoutes");
+const testRoutes = require("./testRoutes");
 app.use("/api/auth", authRoutes);
+app.use("/api/email", emailRoutes);
+app.use("/test", testRoutes);
 
 // Main route - use all.ejs for testing everything
 app.get("/", (req, res) => {

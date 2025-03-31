@@ -1,8 +1,13 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const {
   hashPassword,
   comparePassword,
+  generateEmailVerificationToken,
+  hashToken,
+  getTokenExpiration,
+  verifyHashedToken,
   TOKEN_CONFIG,
 } = require("../../services/authServices");
 
@@ -57,11 +62,22 @@ const userSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpire: {
+      type: Date,
+      select: false,
+    },
     isActive: {
       type: Boolean,
       default: true,
     },
-
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
     lastLogin: {
       type: Date,
       default: Date.now,
@@ -115,6 +131,37 @@ userSchema.methods.updateLastLogin = async function () {
   return await this.save();
 };
 
+// 🔹 Generate Email Verification Token - using the auth service
+userSchema.methods.generateEmailVerificationToken = function () {
+  // Generate a random verification token
+  const verificationToken = generateEmailVerificationToken();
+
+  // Hash the token for storage
+  this.emailVerificationToken = hashToken(verificationToken);
+
+  // Set token expiration
+  this.emailVerificationExpire = getTokenExpiration("EMAIL_VERIFICATION");
+
+  return verificationToken;
+};
+
+// 🔹 Verify Email
+userSchema.methods.verifyEmail = async function () {
+  this.isEmailVerified = true;
+  this.emailVerificationToken = undefined;
+  this.emailVerificationExpire = undefined;
+  return await this.save();
+};
+
+// 🔹 Check if email verification token is valid - using the auth service
+userSchema.methods.isEmailVerificationTokenValid = function (token) {
+  return verifyHashedToken(
+    token,
+    this.emailVerificationToken,
+    this.emailVerificationExpire
+  );
+};
+
 // 🔹 Virtual field for user profile URL
 userSchema.virtual("profileUrl").get(function () {
   return `/users/${this._id}`;
@@ -123,6 +170,7 @@ userSchema.virtual("profileUrl").get(function () {
 // 🔹 Indexes for efficient querying
 userSchema.index({ email: 1, provider: 1 });
 userSchema.index({ providerId: 1, provider: 1 });
+userSchema.index({ emailVerificationToken: 1 });
 
 const User = mongoose.model("User", userSchema);
 

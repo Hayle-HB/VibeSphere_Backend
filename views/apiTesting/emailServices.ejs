@@ -1,0 +1,376 @@
+<!-- Email Services Test -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="m-0">Email Services Test</h5>
+  </div>
+  <div class="card-body">
+    <div class="btn-container">
+      <!-- Email Verification Button -->
+      <button 
+        class="btn btn-primary"
+        data-bs-toggle="modal" 
+        data-bs-target="#verificationEmailModal"
+        <%= !locals.user ? 'disabled' : '' %>
+      >
+        <i class="fas fa-envelope me-2"></i>Email Verification
+      </button>
+
+      <!-- Verify Token Button -->
+      <button 
+        class="btn btn-outline-primary"
+        data-bs-toggle="modal" 
+        data-bs-target="#verifyTokenModal"
+      >
+        <i class="fas fa-check-circle me-2"></i>Verify Token
+      </button>
+
+      <!-- Password Reset Button -->
+      <button 
+        class="btn btn-primary"
+        data-bs-toggle="modal" 
+        data-bs-target="#passwordResetEmailModal"
+      >
+        <i class="fas fa-key me-2"></i>Password Reset
+      </button>
+
+      <!-- Custom Notification Button -->
+      <button 
+        class="btn btn-outline-primary"
+        data-bs-toggle="modal" 
+        data-bs-target="#notificationModal"
+        <%= !locals.user ? 'disabled' : '' %>
+      >
+        <i class="fas fa-paper-plane me-2"></i>Send Notification
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Email Verification Modal -->
+<div class="modal fade" id="verificationEmailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Send Verification Email</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Click the button below to send a verification email to your registered email address.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="sendVerificationBtn" onclick="sendVerificationEmail()">
+          <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+          <span class="btn-text">Send Verification Email</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Verify Token Modal -->
+<div class="modal fade" id="verifyTokenModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Verify Email Token</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="verificationToken" class="form-label">Verification Token</label>
+          <input type="text" class="form-control" id="verificationToken" placeholder="Enter your verification token">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="verifyTokenBtn" onclick="verifyEmail()">
+          <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+          <span class="btn-text">Verify Token</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Reset Email Modal -->
+<div class="modal fade" id="passwordResetEmailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Request Password Reset</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="resetEmailInput" class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="resetEmailInput" placeholder="Enter your email">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="resetPasswordBtn" onclick="requestPasswordReset()">
+          <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+          <span class="btn-text">Send Reset Link</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Send Custom Notification</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="notificationSubject" class="form-label">Subject</label>
+          <input type="text" class="form-control" id="notificationSubject" placeholder="Enter email subject">
+        </div>
+        <div class="mb-3">
+          <label for="notificationText" class="form-label">Text Content</label>
+          <textarea class="form-control" id="notificationText" rows="3" placeholder="Enter plain text content"></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="notificationHtml" class="form-label">HTML Content (Optional)</label>
+          <textarea class="form-control" id="notificationHtml" rows="3" placeholder="Enter HTML content (optional)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="sendNotificationBtn" onclick="sendNotification()">
+          <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+          <span class="btn-text">Send Notification</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Helper function to manage button loading state
+  function toggleButtonLoading(buttonId, isLoading) {
+    const button = document.getElementById(buttonId);
+    const spinner = button.querySelector('.spinner-border');
+    const btnText = button.querySelector('.btn-text');
+    
+    button.disabled = isLoading;
+    spinner.classList.toggle('d-none', !isLoading);
+    btnText.classList.toggle('d-none', isLoading);
+  }
+
+  // Helper function to close modal
+  function closeModal(modalId) {
+    const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+    if (modal) {
+      modal.hide();
+    }
+  }
+
+  // Send verification email
+  async function sendVerificationEmail() {
+    toggleButtonLoading('sendVerificationBtn', true);
+    
+    try {
+      const response = await fetch('/api/email/verify', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+      await testApiRoute('/api/email/verify', 'POST');
+
+      if (response.ok) {
+        showAlert('Verification email sent successfully', 'success');
+        closeModal('verificationEmailModal');
+      } else {
+        showAlert(data.message || 'Failed to send verification email', 'danger');
+      }
+    } catch (error) {
+      showAlert('Error sending verification email', 'danger');
+    } finally {
+      toggleButtonLoading('sendVerificationBtn', false);
+    }
+  }
+
+  // Verify email token
+  async function verifyEmail() {
+    const token = document.getElementById('verificationToken').value;
+    if (!token) {
+      showAlert('Please enter a verification token', 'danger');
+      return;
+    }
+
+    toggleButtonLoading('verifyTokenBtn', true);
+
+    try {
+      const response = await fetch(`/api/email/verify/${token}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+      await testApiRoute(`/api/email/verify/${token}`, 'POST');
+
+      if (response.ok) {
+        showAlert('Email verified successfully', 'success');
+        closeModal('verifyTokenModal');
+        document.getElementById('verificationToken').value = '';
+      } else {
+        showAlert(data.message || 'Failed to verify email', 'danger');
+      }
+    } catch (error) {
+      showAlert('Error verifying email', 'danger');
+    } finally {
+      toggleButtonLoading('verifyTokenBtn', false);
+    }
+  }
+
+  // Request password reset
+  async function requestPasswordReset() {
+    const email = document.getElementById('resetEmailInput').value;
+    if (!email) {
+      showAlert('Please enter an email address', 'danger');
+      return;
+    }
+
+    toggleButtonLoading('resetPasswordBtn', true);
+
+    try {
+      const response = await fetch('/api/email/password-reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+      await testApiRoute('/api/email/password-reset', 'POST');
+
+      if (response.ok) {
+        showAlert('Password reset email sent successfully', 'success');
+        closeModal('passwordResetEmailModal');
+        document.getElementById('resetEmailInput').value = '';
+      } else {
+        showAlert(data.message || 'Failed to send reset email', 'danger');
+      }
+    } catch (error) {
+      showAlert('Error requesting password reset', 'danger');
+    } finally {
+      toggleButtonLoading('resetPasswordBtn', false);
+    }
+  }
+
+  // Send custom notification
+  async function sendNotification() {
+    const subject = document.getElementById('notificationSubject').value;
+    const text = document.getElementById('notificationText').value;
+    const html = document.getElementById('notificationHtml').value;
+
+    if (!subject || !text) {
+      showAlert('Subject and text content are required', 'danger');
+      return;
+    }
+
+    toggleButtonLoading('sendNotificationBtn', true);
+
+    try {
+      const response = await fetch('/api/email/notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ subject, text, html: html || text })
+      });
+
+      const data = await response.json();
+      await testApiRoute('/api/email/notification', 'POST');
+
+      if (response.ok) {
+        showAlert('Notification sent successfully', 'success');
+        closeModal('notificationModal');
+        // Clear form
+        document.getElementById('notificationSubject').value = '';
+        document.getElementById('notificationText').value = '';
+        document.getElementById('notificationHtml').value = '';
+      } else {
+        showAlert(data.message || 'Failed to send notification', 'danger');
+      }
+    } catch (error) {
+      showAlert('Error sending notification', 'danger');
+    } finally {
+      toggleButtonLoading('sendNotificationBtn', false);
+    }
+  }
+
+  // Helper function to show alerts
+  function showAlert(message, type) {
+    const alertHtml = `
+      <div class="alert alert-${type} alert-dismissible fade show mb-4">
+        <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    `;
+
+    const container = document.querySelector('.container');
+    if (container && container.firstChild) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = alertHtml;
+      container.insertBefore(tempDiv.firstChild, container.firstChild.nextSibling);
+    }
+  }
+</script>
+
+<style>
+  .btn-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .modal-header {
+    background-color: var(--primary-color);
+    color: white;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+  }
+
+  textarea.form-control {
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+
+  /* Loading state styles */
+  .spinner-border {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+</style>
