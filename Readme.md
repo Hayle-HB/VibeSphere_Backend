@@ -1,15 +1,34 @@
-# Portfolio Maker - Backend
+# VibeSphere - Social Media Backend
 
-A robust and scalable backend for the Portfolio Maker application, built with Node.js, Express, and MongoDB.
+A robust and scalable backend for the VibeSphere social media application, built with Node.js, Express, and MongoDB.
 
-## 🚀 Features
+## 🚀 Current Progress
 
-- **Authentication System**: Complete user authentication with JWT
-- **Email Service**: Send verification and notification emails
-- **Security**: Implements best security practices with bcrypt, helmet, and rate limiting
-- **MongoDB Database**: Structured data models for users and portfolio content
-- **RESTful API**: Well-designed endpoints for frontend integration
-- **Error Handling**: Comprehensive error management system
+### Authentication System (⭐ Complete)
+
+- **JWT-based Authentication**: Secure token-based authentication with refresh token support
+- **User Registration**: Complete signup flow with email verification
+- **Login/Logout**: Session management with HTTP-only cookies for security
+- **Password Management**: Secure password hashing and reset functionality
+- **Role-based Access Control**: Different permission levels for regular users and administrators
+
+### Current Functionality
+
+- **User Management**: Create, read, update, and delete user profiles
+- **Email Service**: Verification emails and password reset functionality
+- **API Security**: Rate limiting, CORS protection, and secure HTTP headers
+- **Session Handling**: Persistent user sessions with timeout and renewal
+- **Error Management**: Comprehensive error handling and user feedback
+
+## 🛡️ Security Features Implemented
+
+- Password hashing with bcrypt
+- HTTP-only cookie storage for JWT tokens
+- CSRF protection mechanisms
+- Input validation and sanitization with Joi
+- Rate limiting to prevent brute force attacks
+- Helmet for securing HTTP headers
+- Session protection and timeout controls
 
 ## 📋 Prerequisites
 
@@ -23,7 +42,7 @@ A robust and scalable backend for the Portfolio Maker application, built with No
 
    ```
    git clone <repository-url>
-   cd portfolio-maker/back
+   cd vibesphere/back
    ```
 
 2. Install dependencies
@@ -36,7 +55,7 @@ A robust and scalable backend for the Portfolio Maker application, built with No
 
    ```
    PORT=3000
-   MONGODB_URI=mongodb://localhost:27017/portfolio-maker
+   MONGODB_URI=mongodb://localhost:27017/vibesphere
    JWT_SECRET=your_jwt_secret
    SESSION_SECRET=your_session_secret
    EMAIL_USER=your_email@example.com
@@ -57,9 +76,13 @@ A robust and scalable backend for the Portfolio Maker application, built with No
 ### Authentication
 
 - `POST /api/auth/signup`: Register a new user
+- `POST /api/auth/verify-email/:token`: Verify user email
 - `POST /api/auth/login`: Authenticate a user
 - `POST /api/auth/logout`: Log out a user
 - `GET /api/auth/check`: Check authentication status
+- `POST /api/auth/refresh`: Refresh access token
+- `POST /api/auth/forgot-password`: Request password reset
+- `POST /api/auth/reset-password/:token`: Reset password with token
 
 ### Email
 
@@ -75,7 +98,7 @@ A robust and scalable backend for the Portfolio Maker application, built with No
 ├── middlewares/        # Express middlewares
 ├── models/             # Mongoose models
 │   ├── userModels/     # User-related models
-│   └── StoryModels/    # Portfolio content models
+│   └── StoryModels/    # Content models (in progress)
 ├── public/             # Static files
 ├── routes/             # API routes
 ├── services/           # Business logic
@@ -89,14 +112,14 @@ A robust and scalable backend for the Portfolio Maker application, built with No
 └── README.md           # This file
 ```
 
-## 🛡️ Security Features
+## 🚀 Future Development Roadmap
 
-- Password hashing with bcrypt
-- JWT authentication
-- Helmet for HTTP headers
-- Rate limiting to prevent brute force attacks
-- Input validation with Joi
-- HTTP-only cookies
+- **Post Creation & Management**: Adding functionality for users to create, edit, and delete posts
+- **Social Features**: Friend/follow system, likes, comments, and shares
+- **Messaging**: Private messaging between users
+- **Content Feed**: Personalized feed algorithm based on user interests
+- **Notifications**: Real-time notification system
+- **Media Handling**: Image and video upload and storage
 
 ## 🧪 Testing
 
